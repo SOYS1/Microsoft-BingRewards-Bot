@@ -67,7 +67,7 @@
         ['rewards-progress', 'search-status', 'countdown', 'start-search-btn',
          'rewards-search-terms-container', 'rewards-config-section', 'daily-tasks-section',
          'daily-tasks-list', 'daily-tasks-summary', 'main-search-terms', 'iframe-search-terms',
-         'rewards-helper-content', 'rewards-helper-container', 'minimize-btn', 'panel-body', 'capsule-btn', 'status-dot-capsule'].forEach(id => {
+         'rewards-helper-content', 'rewards-helper-container', 'minimize-btn', 'panel-body', 'capsule-btn', 'status-dot-capsule', 'config-grid', 'notification-close'].forEach(id => {
             domCache[id] = document.getElementById(id);
         });
     }
@@ -233,6 +233,13 @@
         }
     }
 
+    function updateCapsuleScore() {
+        const scoreEl = document.getElementById('capsule-score');
+        if (scoreEl) {
+            scoreEl.textContent = currentProgress.current + '/' + currentProgress.total;
+        }
+    }
+
     function updateProgressFromData(progress) {
         if (progress && progress.current !== undefined && progress.total !== undefined) {
             const oldCurrent = currentProgress.current;
@@ -245,6 +252,7 @@
                     '进度: ' + progress.current + '/' + progress.total + (currentProgress.completed ? ' (已完成)' : '');
             }
             updateProgressBar();
+            updateCapsuleScore();
             updateAndSaveState();
             console.log('[RewardsHelper] 进度已更新:', progress.current, '/', progress.total);
         }
@@ -1397,7 +1405,7 @@
                     ensureFallbackSearchTerms();
                 }
                 if (mainPageSearchTerms.length === 0 && iframeSearchTerms.length === 0) {
-                    alert('没有搜索词，无法开始搜索');
+                    updateStatus('没有搜索词，无法开始搜索');
                     return;
                 }
                 // 有搜索词，开始搜索
@@ -1410,6 +1418,7 @@
 
     // 开始搜索流程
     function startSearchProcess() {
+        if (isSearching) return;
         isSearching = true;
         searchState.needRest = false;
         currentProgress.noProgressCount = 0;  // 重置未增加计数
@@ -1502,6 +1511,7 @@
         }
 
         isSearching = false;
+        searchState.countdown = 0;
         searchState.currentAction = 'idle';
         searchState.needRest = false;
         currentProgress.noProgressCount = 0;  // 重置未增加计数
