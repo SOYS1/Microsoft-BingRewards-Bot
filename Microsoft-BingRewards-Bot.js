@@ -67,7 +67,7 @@
         ['rewards-progress', 'search-status', 'countdown', 'start-search-btn',
          'rewards-search-terms-container', 'rewards-config-section', 'daily-tasks-section',
          'daily-tasks-list', 'daily-tasks-summary', 'main-search-terms', 'iframe-search-terms',
-         'rewards-helper-content', 'rewards-helper-container', 'minimize-btn', 'panel-body', 'capsule-btn', 'status-dot-capsule', 'config-grid', 'notification-close'].forEach(id => {
+         'rewards-helper-content', 'rewards-helper-container', 'minimize-btn'].forEach(id => {
             domCache[id] = document.getElementById(id);
         });
     }
@@ -233,13 +233,6 @@
         }
     }
 
-    function updateCapsuleScore() {
-        const scoreEl = document.getElementById('capsule-score');
-        if (scoreEl) {
-            scoreEl.textContent = currentProgress.current + '/' + currentProgress.total;
-        }
-    }
-
     function updateProgressFromData(progress) {
         if (progress && progress.current !== undefined && progress.total !== undefined) {
             const oldCurrent = currentProgress.current;
@@ -252,7 +245,6 @@
                     '进度: ' + progress.current + '/' + progress.total + (currentProgress.completed ? ' (已完成)' : '');
             }
             updateProgressBar();
-            updateCapsuleScore();
             updateAndSaveState();
             console.log('[RewardsHelper] 进度已更新:', progress.current, '/', progress.total);
         }
@@ -313,105 +305,366 @@
         }
     }
 
-    // 创建胶囊风格 UI
+    // 创建UI控件
     function createUI() {
         const theme = getTheme();
-        const CSS = '.brb-panel{transition:opacity .25s,transform .3s cubic-bezier(.4,0,.2,1);position:relative}.brb-panel.collapsed{opacity:0;transform:scale(.85) translateY(8px);pointer-events:none}.brb-toggle{cursor:pointer;user-select:none;display:flex;align-items:center;gap:7px;background:linear-gradient(135deg,'+theme.accent+',#005a9e);color:#fff;padding:8px 14px;border-radius:99px;font-size:12px;font-weight:600;box-shadow:0 2px 12px rgba(0,120,212,.35);transition:transform .2s,box-shadow .2s;border:none}.brb-toggle:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(0,120,212,.5)}.brb-dot{width:8px;height:8px;border-radius:50%;background:#aaa;transition:background .3s,box-shadow .3s;flex-shrink:0}.capsule-text{font-weight:600;font-size:12px;white-space:nowrap}.capsule-score{font-size:11px;opacity:.9}.expand-arrow{font-size:9px;opacity:.7;transition:transform .3s}.collapsed .expand-arrow{transform:rotate(-90deg)}.brb-hdr{background:linear-gradient(135deg,'+theme.accent+',#005a9e);color:#fff;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;border-radius:12px 12px 0 0}.brb-hdr-title{font-weight:600;font-size:13px}.brb-btn{padding:6px 10px;border:none;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;transition:background .15s}.brb-prog{padding:10px 14px 0}.brb-prog-row{display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:600;color:'+theme.text+';margin-bottom:6px}.brb-prog-track{width:100%;height:5px;border-radius:99px;background:'+theme.inputBorder+';overflow:hidden}.brb-prog-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,'+theme.accent+',#00bcf2);transition:width .4s ease}.brb-status{margin-top:8px;padding:6px 10px;border-radius:8px;background:'+theme.inputBg+';font-size:11px;color:'+theme.text+';display:flex;align-items:center;gap:6px}.brb-dot-sm{width:6px;height:6px;border-radius:50%;background:#aaa;flex-shrink:0}.brb-section{padding:8px 14px;border-top:1px solid '+theme.border+';font-size:11px}.brb-sec-title{font-weight:600;margin-bottom:3px;color:'+theme.textSecondary+';font-size:10px;text-transform:uppercase;letter-spacing:.5px}.brb-terms{padding:6px 14px;background:'+theme.inputBg+';font-size:10px;color:'+theme.text+';word-break:break-all}.brb-actions{padding:8px 14px;display:flex;gap:6px}.brb-start{flex:1;padding:7px 0;border:none;border-radius:8px;cursor:pointer;background:linear-gradient(135deg,'+theme.accent+',#005a9e);color:#fff;font-size:12px;font-weight:600;transition:opacity .15s}.brb-start:hover{opacity:.9}.brb-cfg{padding:7px 10px;border:1px solid '+theme.border+';border-radius:8px;cursor:pointer;background:'+theme.inputBg+';color:'+theme.text+';font-size:12px;transition:background .15s}.brb-cfg:hover{background:'+theme.border+'}.brb-config{padding:0 14px 10px;border-top:1px solid '+theme.border+';max-height:0;overflow:hidden;transition:max-height .3s ease,opacity .2s;opacity:0}.brb-config.open{max-height:300px;opacity:1}.brb-cfg-grid{display:flex;flex-direction:column;gap:6px;margin-top:8px;font-size:11px}.brb-cfg-row{display:flex;align-items:center;justify-content:space-between;color:'+theme.textSecondary+';font-size:10px}.brb-cfg-row label{flex:1}.brb-input{width:56px;padding:3px 5px;border-radius:6px;font-size:11px;text-align:center;border:1px solid '+theme.inputBorder+';background:'+theme.inputBg+';color:'+theme.text+';transition:border-color .2s}.brb-switch{width:30px;height:16px;border-radius:99px;position:relative;cursor:pointer;transition:background .2s;flex-shrink:0;background:'+theme.inputBorder+';border:none}.brb-switch.on{background:'+theme.accent+';border:none}.brb-switch::after{content:\'\';position:absolute;width:12px;height:12px;border-radius:50%;background:#fff;top:2px;left:2px;transition:transform .2s}.brb-switch.on::after{transform:translateX(14px)}.brb-ftr{padding:6px 14px;border-top:1px solid '+theme.border+';display:flex;justify-content:space-between;align-items:center;font-size:10px;color:'+theme.textSecondary+';}';
-        if (!document.getElementById('bing-rewards-bot-style')) {
-            const style = document.createElement('style');
-            style.id = 'bing-rewards-bot-style';
-            style.textContent = CSS;
-            document.head.appendChild(style);
-        }
+
         const container = document.createElement('div');
         container.id = 'rewards-helper-container';
-        container.style.cssText = 'position:fixed;bottom:20px;right:20px;z-index:10000;';
-        const capsule = document.createElement('div');
-        capsule.id = 'capsule-btn';
-        capsule.className = 'brb-toggle';
-        capsule.innerHTML = '<span class="brb-dot" id="status-dot-capsule"></span><span class="capsule-text">Rewards Bot</span><span class="capsule-score" id="capsule-score">0/90</span><span class="expand-arrow">\u25BC</span>';
-        capsule.onclick = (e) => {
-            if (e.target.closest('.brb-btn') || e.target.closest('.brb-switch') || e.target.closest('.brb-input')) return;
-            toggleCollapse();
+        container.style.cssText = `
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: ${theme.bg};
+            color: ${theme.text};
+            border: 1px solid ${theme.border};
+            border-radius: 10px;
+            padding: 0;
+            z-index: 10000;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+            width: 280px;
+            font-size: 12px;
+            line-height: 1.4;
+            overflow: hidden;
+        `;
+
+        // === 标题栏 ===
+        const header = document.createElement('div');
+        header.style.cssText = `
+            background: linear-gradient(135deg, ${theme.accent}, #005a9e);
+            color: white;
+            padding: 10px 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: move;
+        `;
+
+        const headerLeft = document.createElement('div');
+        headerLeft.style.cssText = 'display: flex; align-items: center; gap: 8px;';
+
+        const headerIcon = document.createElement('span');
+        headerIcon.textContent = '🔍';
+        headerIcon.style.fontSize = '16px';
+        headerLeft.appendChild(headerIcon);
+
+        const headerTitleGroup = document.createElement('div');
+        const headerTitle = document.createElement('div');
+        headerTitle.textContent = 'Rewards 自动助手';
+        headerTitle.style.cssText = 'font-weight: bold; font-size: 13px;';
+        headerTitleGroup.appendChild(headerTitle);
+
+        const headerVersion = document.createElement('div');
+        headerVersion.textContent = 'v1.0.0 by SOYS';
+        headerVersion.style.cssText = 'font-size: 10px; opacity: 0.8;';
+        headerTitleGroup.appendChild(headerVersion);
+        headerLeft.appendChild(headerTitleGroup);
+        header.appendChild(headerLeft);
+
+        const controlsContainer = document.createElement('div');
+        controlsContainer.style.cssText = 'display: flex; align-items: center; gap: 6px;';
+
+        const minimizeBtn = document.createElement('span');
+        minimizeBtn.id = 'minimize-btn';
+        minimizeBtn.textContent = '−';
+        minimizeBtn.style.cssText = 'cursor: pointer; font-size: 16px; opacity: 0.8; width: 20px; text-align: center;';
+        minimizeBtn.onmouseenter = () => minimizeBtn.style.opacity = '1';
+        minimizeBtn.onmouseleave = () => minimizeBtn.style.opacity = '0.8';
+        minimizeBtn.onclick = toggleCollapse;
+        controlsContainer.appendChild(minimizeBtn);
+
+        const closeBtn = document.createElement('span');
+        closeBtn.textContent = '×';
+        closeBtn.style.cssText = 'cursor: pointer; font-size: 18px; opacity: 0.8; width: 20px; text-align: center;';
+        closeBtn.onmouseenter = () => closeBtn.style.opacity = '1';
+        closeBtn.onmouseleave = () => closeBtn.style.opacity = '0.8';
+        closeBtn.onclick = () => container.style.display = 'none';
+        controlsContainer.appendChild(closeBtn);
+        header.appendChild(controlsContainer);
+        container.appendChild(header);
+
+        // === 内容区域 ===
+        const content = document.createElement('div');
+        content.id = 'rewards-helper-content';
+        content.style.cssText = 'padding: 12px;';
+
+        // --- 进度条区域 ---
+        const progressSection = document.createElement('div');
+        progressSection.style.cssText = 'margin-bottom: 10px;';
+
+        const progressHeader = document.createElement('div');
+        progressHeader.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;';
+
+        const progress = document.createElement('div');
+        progress.id = 'rewards-progress';
+        progress.textContent = '进度: 加载中...';
+        progress.style.cssText = 'font-weight: bold; font-size: 12px;';
+        progressHeader.appendChild(progress);
+
+        const countdown = document.createElement('div');
+        countdown.id = 'countdown';
+        countdown.style.cssText = 'font-size: 11px; color: #0078d4; font-weight: bold;';
+        progressHeader.appendChild(countdown);
+        progressSection.appendChild(progressHeader);
+
+        // 进度条
+        const progressBarBg = document.createElement('div');
+        progressBarBg.style.cssText = `
+            width: 100%;
+            height: 6px;
+            background-color: ${theme.inputBorder};
+            border-radius: 3px;
+            overflow: hidden;
+        `;
+        const progressBarFill = document.createElement('div');
+        progressBarFill.id = 'rewards-progress-bar';
+        progressBarFill.style.cssText = `
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, #0078d4, #00bcf2);
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        `;
+        progressBarBg.appendChild(progressBarFill);
+        progressSection.appendChild(progressBarBg);
+        content.appendChild(progressSection);
+
+        // --- 状态区域 ---
+        const searchStatus = document.createElement('div');
+        searchStatus.id = 'search-status';
+        searchStatus.style.cssText = `
+            font-size: 11px;
+            color: ${theme.textSecondary};
+            margin-bottom: 8px;
+            padding: 6px 8px;
+            background-color: ${theme.inputBg};
+            border-radius: 4px;
+            border-left: 3px solid ${theme.accent};
+        `;
+        searchStatus.textContent = '就绪';
+        content.appendChild(searchStatus);
+
+        // --- 每日任务区域 ---
+        const dailyTasksSection = document.createElement('div');
+        dailyTasksSection.id = 'daily-tasks-section';
+        dailyTasksSection.style.cssText = 'margin-bottom: 8px;';
+
+        const dailyTasksTitle = document.createElement('div');
+        dailyTasksTitle.id = 'daily-tasks-summary';
+        dailyTasksTitle.textContent = '每日任务：加载中...';
+        dailyTasksTitle.style.cssText = 'font-weight: bold; font-size: 11px; margin-bottom: 4px;';
+        dailyTasksSection.appendChild(dailyTasksTitle);
+
+        const dailyTasksList = document.createElement('div');
+        dailyTasksList.id = 'daily-tasks-list';
+        dailyTasksList.style.cssText = 'font-size: 11px; padding-left: 4px;';
+        dailyTasksSection.appendChild(dailyTasksList);
+        content.appendChild(dailyTasksSection);
+
+        // --- 搜索词区域（可折叠） ---
+        const searchTermsContainer = document.createElement('div');
+        searchTermsContainer.id = 'rewards-search-terms-container';
+        searchTermsContainer.style.cssText = `
+            margin-bottom: 8px;
+            max-height: 100px;
+            overflow-y: auto;
+            font-size: 11px;
+            padding: 6px 8px;
+            background-color: ${theme.inputBg};
+            border-radius: 4px;
+        `;
+
+        const termsHeader = document.createElement('div');
+        termsHeader.style.cssText = `font-weight: bold; margin-bottom: 4px; font-size: 11px; color: ${theme.textSecondary};`;
+        termsHeader.textContent = '搜索词列表';
+        searchTermsContainer.appendChild(termsHeader);
+
+        const mainTermsTitle = document.createElement('div');
+        mainTermsTitle.textContent = '主页面:';
+        mainTermsTitle.style.cssText = `font-weight: bold; font-size: 10px; color: ${theme.textSecondary}; margin-top: 4px;`;
+        searchTermsContainer.appendChild(mainTermsTitle);
+
+        const mainTerms = document.createElement('div');
+        mainTerms.id = 'main-search-terms';
+        mainTerms.style.cssText = 'padding-left: 8px; margin-bottom: 4px;';
+        searchTermsContainer.appendChild(mainTerms);
+
+        const iframeTermsTitle = document.createElement('div');
+        iframeTermsTitle.textContent = '侧栏推荐:';
+        iframeTermsTitle.style.cssText = `font-weight: bold; font-size: 10px; color: ${theme.textSecondary};`;
+        searchTermsContainer.appendChild(iframeTermsTitle);
+
+        const iframeTerms = document.createElement('div');
+        iframeTerms.id = 'iframe-search-terms';
+        iframeTerms.style.cssText = 'padding-left: 8px;';
+        searchTermsContainer.appendChild(iframeTerms);
+        content.appendChild(searchTermsContainer);
+
+        // === 配置区域（可折叠） ===
+        const configSection = document.createElement('div');
+        configSection.id = 'rewards-config-section';
+        configSection.style.cssText = `
+            border-top: 1px solid ${theme.border};
+            padding-top: 8px;
+        `;
+
+        const configToggle = document.createElement('div');
+        configToggle.style.cssText = `
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 11px;
+            padding: 4px 0;
+        `;
+        configToggle.textContent = '⚙️ 配置参数';
+        const configArrow = document.createElement('span');
+        configArrow.textContent = '▸';
+        configArrow.style.cssText = 'transition: transform 0.2s; font-size: 10px;';
+        configToggle.appendChild(configArrow);
+        configSection.appendChild(configToggle);
+
+        const configForm = document.createElement('div');
+        configForm.style.cssText = `
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            margin-top: 8px;
+            font-size: 11px;
+            display: none;
+        `;
+
+        const configItems = [
+            { label: '休息时间(分)', id: 'rest-time', value: config.restTime / 60, min: 1, max: 30 },
+            { label: '滚动时间(秒)', id: 'scroll-time', value: config.scrollTime, min: 3, max: 30 },
+            { label: '等待时间(秒)', id: 'wait-time', value: config.waitTime, min: 3, max: 30 },
+            { label: '容错次数', id: 'max-no-progress', value: config.maxNoProgressCount, min: 1, max: 10 }
+        ];
+        configItems.forEach(item => {
+            const field = document.createElement('div');
+            field.style.cssText = 'display: flex; flex-direction: column; gap: 2px;';
+
+            const label = document.createElement('label');
+            label.setAttribute('for', item.id);
+            label.textContent = item.label;
+            label.style.cssText = `font-size: 10px; color: ${theme.textSecondary};`;
+            field.appendChild(label);
+
+            const input = document.createElement('input');
+            input.type = 'number';
+            input.id = item.id;
+            input.value = item.value;
+            input.min = item.min;
+            input.max = item.max;
+            input.style.cssText = `
+                width: 100%;
+                box-sizing: border-box;
+                background: ${theme.inputBg};
+                color: ${theme.text};
+                border: 1px solid ${theme.inputBorder};
+                border-radius: 4px;
+                padding: 4px 6px;
+                font-size: 11px;
+            `;
+            input.addEventListener('change', () => {
+                const val = parseInt(input.value) || item.min;
+                if (item.id === 'rest-time') {
+                    config.restTime = val * 60;
+                    saveConfig();
+                    updateStatus('休息时间已更新: ' + val + '分钟');
+                } else if (item.id === 'scroll-time') {
+                    config.scrollTime = val;
+                    saveConfig();
+                    updateStatus('滚动时间已更新: ' + val + '秒');
+                } else if (item.id === 'wait-time') {
+                    config.waitTime = val;
+                    saveConfig();
+                    updateStatus('等待时间已更新: ' + val + '秒');
+                } else if (item.id === 'max-no-progress') {
+                    config.maxNoProgressCount = val;
+                    saveConfig();
+                    updateStatus('容错次数已更新: ' + val + '次');
+                }
+            });
+            field.appendChild(input);
+            configForm.appendChild(field);
+        });
+
+        // 自动点击开关
+        const autoClickRow = document.createElement('div');
+        autoClickRow.style.cssText = 'grid-column: 1 / -1; display: flex; align-items: center; gap: 6px; margin-top: 2px;';
+
+        const autoClickCheckbox = document.createElement('input');
+        autoClickCheckbox.type = 'checkbox';
+        autoClickCheckbox.id = 'auto-click-daily';
+        autoClickCheckbox.checked = config.autoClickDailyTasks;
+        autoClickCheckbox.style.cssText = 'cursor: pointer; width: 14px; height: 14px;';
+
+        const autoClickLabel = document.createElement('label');
+        autoClickLabel.setAttribute('for', 'auto-click-daily');
+        autoClickLabel.textContent = '自动点击奖励卡片';
+        autoClickLabel.style.cssText = 'cursor: pointer; font-size: 11px;';
+        autoClickCheckbox.addEventListener('change', () => {
+            config.autoClickDailyTasks = autoClickCheckbox.checked;
+            saveConfig();
+            updateStatus('自动点击奖励卡片: ' + (autoClickCheckbox.checked ? '开启' : '关闭'));
+        });
+        autoClickRow.appendChild(autoClickCheckbox);
+        autoClickRow.appendChild(autoClickLabel);
+        configForm.appendChild(autoClickRow);
+
+        configSection.appendChild(configForm);
+        content.appendChild(configSection);
+
+        // 配置折叠切换
+        let configExpanded = false;
+        configToggle.addEventListener('click', () => {
+            configExpanded = !configExpanded;
+            configForm.style.display = configExpanded ? 'grid' : 'none';
+            configArrow.style.transform = configExpanded ? 'rotate(90deg)' : '';
+        });
+
+        container.appendChild(content);
+
+        // === 底部按钮 ===
+        const buttonsContainer = document.createElement('div');
+        buttonsContainer.id = 'rewards-buttons-container';
+        buttonsContainer.style.cssText = `
+            padding: 0 12px 12px 12px;
+        `;
+
+        const startSearchBtn = document.createElement('button');
+        startSearchBtn.id = 'start-search-btn';
+        startSearchBtn.textContent = '▶ 开始搜索';
+        startSearchBtn.style.cssText = `
+            width: 100%;
+            padding: 8px 0;
+            cursor: pointer;
+            background: linear-gradient(135deg, ${theme.accent}, #005a9e);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: bold;
+            transition: opacity 0.2s;
+        `;
+        startSearchBtn.onmouseenter = () => startSearchBtn.style.opacity = '0.9';
+        startSearchBtn.onmouseleave = () => startSearchBtn.style.opacity = '1';
+        startSearchBtn.onclick = () => {
+            if (!isSearching) {
+                startAutomatedSearch();
+            } else {
+                stopAutomatedSearch();
+            }
         };
-        container.appendChild(capsule);
-        const panel = document.createElement('div');
-        panel.id = 'panel-body';
-        panel.className = 'brb-panel collapsed';
-        panel.style.cssText = 'margin-top:10px;width:300px;background:' + theme.bg + ';color:' + theme.text + ';border:1px solid ' + theme.border + ';border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.2);overflow:hidden;';
-        // Header
-        const hdr = document.createElement('div');
-        hdr.style.cssText = 'background:linear-gradient(135deg,'+theme.accent+',#005a9e);color:#fff;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;border-radius:12px 12px 0 0;cursor:move;';
-        const hdrL = document.createElement('div'); hdrL.style.cssText='display:flex;align-items:center;gap:8px;';
-        const hdrIcon = document.createElement('span'); hdrIcon.textContent='\uD83D\uDD0D'; hdrIcon.style.cssText='font-size:15px;';
-        const hdrTitle = document.createElement('div'); hdrTitle.style.cssText='font-weight:600;font-size:13px;'; hdrTitle.textContent='Rewards \u81EA\u52A8\u52A9\u624B';
-        hdrL.appendChild(hdrIcon); hdrL.appendChild(hdrTitle);
-        const hdrR = document.createElement('button'); hdrR.id='minimize-btn'; hdrR.className='brb-btn';
-        hdrR.style.cssText='background:rgba(255,255,255,.2);color:#fff;padding:4px 8px;border-radius:6px;cursor:pointer;font-size:14px;border:none;';
-        hdrR.textContent='\u2212'; hdrR.onclick=toggleCollapse;
-        hdr.appendChild(hdrL); hdr.appendChild(hdrR); panel.appendChild(hdr);
-        // Progress
-        const prog=document.createElement('div'); prog.style.cssText='padding:10px 14px 0;';
-        const progRow=document.createElement('div'); progRow.style.cssText='display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:600;color:'+theme.text+';margin-bottom:6px;';
-        const progLabel=document.createElement('span'); progLabel.textContent='\u8FDB\u5EA6';
-        const progNum=document.createElement('span'); progNum.id='rewards-progress'; progNum.style.cssText='font-size:11px;color:'+theme.accent+';'; progNum.textContent='0/90';
-        progRow.appendChild(progLabel); progRow.appendChild(progNum); prog.appendChild(progRow);
-        const progTrack=document.createElement('div'); progTrack.style.cssText='width:100%;height:5px;border-radius:99px;background:'+theme.inputBorder+';overflow:hidden;';
-        const progFill=document.createElement('div'); progFill.id='rewards-progress-bar'; progFill.style.cssText='width:0%;height:100%;border-radius:99px;background:linear-gradient(90deg,'+theme.accent+',#00bcf2);transition:width .4s ease;';
-        progTrack.appendChild(progFill); prog.appendChild(progTrack); panel.appendChild(prog);
-        // Status
-        const sRow=document.createElement('div'); sRow.style.cssText='margin-top:8px;padding:6px 10px;border-radius:8px;background:'+theme.inputBg+';font-size:11px;color:'+theme.text+';display:flex;align-items:center;gap:6px;';
-        const sDot=document.createElement('span'); sDot.style.cssText='width:6px;height:6px;border-radius:50%;background:#aaa;flex-shrink:0;';
-        const sText=document.createElement('span'); sText.id='search-status'; sText.style.cssText='flex:1;color:'+theme.text+';'; sText.textContent='\u5C31\u7EEA';
-        const sCD=document.createElement('span'); sCD.id='countdown'; sCD.style.cssText='font-size:11px;color:'+theme.accent+';display:none;';
-        sRow.appendChild(sDot); sRow.appendChild(sText); sRow.appendChild(sCD); panel.appendChild(sRow);
-        // Daily tasks
-        const tasksSec=document.createElement('div'); tasksSec.id='daily-tasks-section'; tasksSec.style.cssText='padding:8px 14px;border-top:1px solid '+theme.border+';font-size:11px;';
-        const tasksTitle=document.createElement('div'); tasksTitle.id='daily-tasks-summary'; tasksTitle.style.cssText='font-weight:600;margin-bottom:3px;color:'+theme.textSecondary+';font-size:10px;text-transform:uppercase;letter-spacing:.5px;'; tasksTitle.textContent='\u6BCF\u65E5\u4EFB\u52A1';
-        const tasksList=document.createElement('div'); tasksList.id='daily-tasks-list'; tasksList.style.cssText='font-size:11px;color:'+theme.text+';padding-left:4px;'; tasksList.textContent='\u52A0\u8F7D\u4E2D...';
-        tasksSec.appendChild(tasksTitle); tasksSec.appendChild(tasksList); panel.appendChild(tasksSec);
-        // Search terms
-        const termsSec=document.createElement('div'); termsSec.id='rewards-search-terms-container'; termsSec.style.cssText='padding:8px 14px;border-top:1px solid '+theme.border+';font-size:10px;color:'+theme.text+';word-break:break-all;background:'+theme.inputBg+';';
-        const termsH=document.createElement('div'); termsH.style.cssText='font-weight:600;margin-bottom:4px;font-size:10px;color:'+theme.textSecondary+';text-transform:uppercase;letter-spacing:.5px;'; termsH.textContent='\u641C\u7D22\u8BCD'; termsSec.appendChild(termsH);
-        const mtL=document.createElement('div'); mtL.textContent='\u4E3B\u9875: '; mtL.style.cssText='font-weight:600;font-size:10px;';
-        const mtEl=document.createElement('div'); mtEl.id='main-search-terms'; mtEl.style.cssText='padding-left:4px;margin-bottom:2px;word-break:break-all;'; termsSec.appendChild(mtL); termsSec.appendChild(mtEl);
-        const itL=document.createElement('div'); itL.textContent='\u4FA7\u680F: '; itL.style.cssText='font-weight:600;font-size:10px;margin-top:2px;';
-        const itEl=document.createElement('div'); itEl.id='iframe-search-terms'; itEl.style.cssText='padding-left:4px;word-break:break-all;'; termsSec.appendChild(itL); termsSec.appendChild(itEl);
-        panel.appendChild(termsSec);
-        // Divider
-        const div=document.createElement('div'); div.style.cssText='height:1px;background:'+theme.border+';margin:0 14px;'; panel.appendChild(div);
-        // Actions
-        const btnSec=document.createElement('div'); btnSec.style.cssText='padding:8px 14px;display:flex;gap:6px;';
-        const startBtn=document.createElement('button'); startBtn.id='start-search-btn'; startBtn.className='brb-start'; startBtn.textContent='\u25B6 \u5F00\u59CB\u641C\u7D22';
-        startBtn.style.cssText='flex:1;padding:7px 0;border:none;border-radius:8px;cursor:pointer;background:linear-gradient(135deg,'+theme.accent+',#005a9e);color:#fff;font-size:12px;font-weight:600;transition:opacity .15s;';
-        startBtn.onmouseenter=()=>startBtn.style.opacity='.9'; startBtn.onmouseleave=()=>startBtn.style.opacity='1';
-        startBtn.onclick=()=>{ if(!isSearching) startAutomatedSearch(); else stopAutomatedSearch(); };
-        const cfgBtn=document.createElement('button'); cfgBtn.className='brb-cfg'; cfgBtn.textContent='\u2699';
-        cfgBtn.style.cssText='padding:7px 10px;border:1px solid '+theme.border+';border-radius:8px;cursor:pointer;background:'+theme.inputBg+';color:'+theme.text+';font-size:12px;transition:background .15s;';
-        cfgBtn.onmouseenter=()=>cfgBtn.style.background=theme.border; cfgBtn.onmouseleave=()=>cfgBtn.style.background=theme.inputBg;
-        cfgBtn.onclick=()=>{ const g=domCache['config-grid']; if(g) g.classList.toggle('open'); };
-        btnSec.appendChild(startBtn); btnSec.appendChild(cfgBtn); panel.appendChild(btnSec);
-        // Config
-        const configSec=document.createElement('div'); configSec.id='rewards-config-section'; configSec.className='brb-config'; configSec.style.cssText='padding:0 14px 10px;border-top:1px solid '+theme.border+';';
-        const cfgGrid=document.createElement('div'); cfgGrid.id='config-grid'; cfgGrid.style.cssText='display:flex;flex-direction:column;gap:6px;margin-top:8px;';
-        const cfgItems=[{id:'rest-time',label:'\u4F11\u606F\u65F6\u95F4\uFF08\u5206\uFF09',value:config.restTime/60,min:1,max:30},{id:'scroll-time',label:'\u6EDA\u52A8\u65F6\u95F4\uFF08\u79D2\uFF09',value:config.scrollTime,min:1,max:30},{id:'wait-time',label:'\u7B49\u5F85\u65F6\u95F4\uFF08\u79D2\uFF09',value:config.waitTime,min:1,max:30},{id:'max-no-progress',label:'\u5BB9\u9519\u6B21\u6570',value:config.maxNoProgressCount,min:1,max:10}];
-        cfgItems.forEach(item=>{ const row=document.createElement('div'); row.style.cssText='display:flex;align-items:center;justify-content:space-between;font-size:10px;color:'+theme.textSecondary+';'; const lbl=document.createElement('label'); lbl.textContent=item.label; const inp=document.createElement('input'); inp.type='number'; inp.id=item.id; inp.value=item.value; inp.min=item.min; inp.max=item.max; inp.className='brb-input'; inp.addEventListener('change',()=>{ const v=parseInt(inp.value)||item.min; if(item.id==='rest-time'){config.restTime=v*60;saveConfig();} else if(item.id==='scroll-time'){config.scrollTime=v;saveConfig();} else if(item.id==='wait-time'){config.waitTime=v;saveConfig();} else if(item.id==='max-no-progress'){config.maxNoProgressCount=v;saveConfig();} updateStatus('\u914D\u7F6E\u5DF2\u66F4\u65B0'); }); row.appendChild(lbl); row.appendChild(inp); cfgGrid.appendChild(row); });
-        const swRow=document.createElement('div'); swRow.style.cssText='display:flex;align-items:center;justify-content:space-between;font-size:10px;color:'+theme.textSecondary+';margin-top:4px;';
-        const swLbl=document.createElement('label'); swLbl.textContent='\u81EA\u52A8\u70B9\u51FB\u5956\u52B1\u5361\u7247';
-        const swEl=document.createElement('div'); swEl.className='brb-switch'+(config.autoClickDailyTasks?' on':'');
-        swEl.onclick=()=>{config.autoClickDailyTasks=!config.autoClickDailyTasks;swEl.classList.toggle('on');saveConfig();updateStatus('\u81EA\u52A8\u70B9\u51FB\u5956\u52B1\u5361\u7247: '+ (config.autoClickDailyTasks?'\u5F00\u542F':'\u5173\u95ED'));};
-        swRow.appendChild(swLbl); swRow.appendChild(swEl); cfgGrid.appendChild(swRow);
-        configSec.appendChild(cfgGrid); panel.appendChild(configSec);
-        // Footer
-        const ftr=document.createElement('div'); ftr.style.cssText='padding:6px 14px;border-top:1px solid '+theme.border+';display:flex;justify-content:space-between;align-items:center;font-size:10px;color:'+theme.textSecondary+';';
-        const ftrL=document.createElement('span'); ftrL.textContent='v1.1.3 \u00B7 SOYS \u00B7 \u6A21\u62DF\u4EBA\u5DE5';
-        const ftrR=document.createElement('button'); ftrR.className='brb-btn'; ftrR.style.cssText='background:transparent;border:none;cursor:pointer;color:'+theme.textSecondary+';font-size:14px;padding:2px 4px;border-radius:4px;transition:background .15s;';
-        ftrR.textContent='\u2212'; ftrR.onmouseenter=()=>ftrR.style.background=theme.inputBg; ftrR.onmouseleave=()=>ftrR.style.background='transparent'; ftrR.onclick=toggleCollapse;
-        ftr.appendChild(ftrL); ftr.appendChild(ftrR); panel.appendChild(ftr);
-        container.appendChild(panel); document.body.appendChild(container);
-        makeDraggable(container, hdr);
-        searchState.isCollapsed=false; applyCollapseState();
+        buttonsContainer.appendChild(startSearchBtn);
+        container.appendChild(buttonsContainer);
+
+        document.body.appendChild(container);
+        makeDraggable(container, header);
     }
+
     // 让UI窗口可拖动
     function makeDraggable(container, header) {
         let offsetX, offsetY;
@@ -479,20 +732,25 @@
 
     // 应用折叠状态
     function applyCollapseState() {
-        const panel = domCache['panel-body'];
-        const capsule = domCache['capsule-btn'];
+        const searchTermsContainer = domCache['rewards-search-terms-container'];
+        const configSection = domCache['rewards-config-section'];
+        const dailyTasksSection = domCache['daily-tasks-section'];
+        const content = domCache['rewards-helper-content'];
         const minimizeBtn = domCache['minimize-btn'];
-        const dot = domCache['status-dot-capsule'];
+        const statusElem = domCache['search-status'];
+
         if (searchState.isCollapsed) {
-            if (panel) { panel.classList.add('collapsed'); panel.style.display = 'none'; }
-            if (capsule) capsule.style.display = 'flex';
+            // 折叠 - 只保留进度条和状态
+            if (searchTermsContainer) searchTermsContainer.style.display = 'none';
+            if (configSection) configSection.style.display = 'none';
+            if (dailyTasksSection) dailyTasksSection.style.display = 'none';
             if (minimizeBtn) minimizeBtn.textContent = '+';
-            if (dot) { dot.style.background = '#aaa'; dot.style.boxShadow = 'none'; }
         } else {
-            if (panel) { panel.classList.remove('collapsed'); panel.style.display = 'block'; }
-            if (capsule) capsule.style.display = 'none';
-            if (minimizeBtn) minimizeBtn.textContent = '\u2212';
-            if (dot) { dot.style.background = '#00c853'; dot.style.boxShadow = '0 0 6px rgba(0,200,83,.6)'; }
+            // 展开
+            if (searchTermsContainer) searchTermsContainer.style.display = 'block';
+            if (configSection) configSection.style.display = 'block';
+            if (dailyTasksSection) dailyTasksSection.style.display = 'block';
+            if (minimizeBtn) minimizeBtn.textContent = '−';
         }
     }
 
@@ -790,65 +1048,65 @@
             // 直接获取body文本内容，避免遍历所有元素
             const allEarnedText = iframeDoc.body ? iframeDoc.body.textContent : '';
             console.log('body文本内容:', allEarnedText.substring(0, 200));
-            
+
             // 检查中文假提示
             if (allEarnedText.includes('你已获得') && allEarnedText.includes('积分') && allEarnedText.includes('每天继续搜索')) {
                 console.log(`检测到中文假提示`);
-                
+
                 const currentMatch = allEarnedText.match(/你已获得\s*(\d+)\s*积分/);
                 const totalMatch = allEarnedText.match(/每天继续搜索并获得最多\s*(\d+)\s*奖励积分/);
-                
+
                 if (currentMatch && totalMatch) {
                     const currentPoints = parseInt(currentMatch[1]);
                     const totalPoints = parseInt(totalMatch[1]);
-                    
+
                     console.log(`从中文假提示中提取: 当前${currentPoints}分，总共${totalPoints}分`);
-                    
+
                     currentProgress.current = currentPoints;
                     currentProgress.total = totalPoints;
                     currentProgress.completed = false;
-                    
+
                     domCache['rewards-progress'].textContent = `进度: ${currentPoints}/${totalPoints} (从提示获取)`;
                     updateProgressBar();
                     console.log(`从中文假提示更新进度: ${currentPoints}/${totalPoints}`);
-                    
+
                     updateAndSaveState();
                     return true;
                 }
             }
-            
+
             // 检查英文假提示
             if (allEarnedText.includes('You earned') && allEarnedText.includes('points') && allEarnedText.includes('Keep searching')) {
                 console.log(`检测到英文假提示`);
-                
+
                 // 修复正则表达式，处理可能的变体
                 const currentMatch = allEarnedText.match(/You earned\s*(\d+)\s*points?(?:\s+already)?/i);
                 const totalMatch = allEarnedText.match(/(?:earn\s+up\s+to|get\s+up\s+to)\s*(\d+)\s*(?:Rewards\s+)?points?/i);
-                
+
                 console.log('当前积分匹配:', currentMatch);
                 console.log('总积分匹配:', totalMatch);
-                
+
                 if (currentMatch && totalMatch) {
                     const currentPoints = parseInt(currentMatch[1]);
                     const totalPoints = parseInt(totalMatch[1]);
-                    
+
                     console.log(`从英文假提示中提取: 当前${currentPoints}分，总共${totalPoints}分`);
-                    
+
                     currentProgress.current = currentPoints;
                     currentProgress.total = totalPoints;
                     currentProgress.completed = false;
-                    
+
                     domCache['rewards-progress'].textContent = `进度: ${currentPoints}/${totalPoints} (从提示获取)`;
                     updateProgressBar();
                     console.log(`从英文假提示更新进度: ${currentPoints}/${totalPoints}`);
-                    
+
                     updateAndSaveState();
                     return true;
                 } else {
                     console.log('英文假提示正则匹配失败');
                 }
             }
-            
+
             // 检查中文真正完成提示
             if (allEarnedText.includes('你已获得') && allEarnedText.includes('积分') && !allEarnedText.includes('每天继续搜索')) {
                 console.log(`找到中文完成文本`);
@@ -862,12 +1120,12 @@
                     domCache['rewards-progress'].textContent = `进度: ${totalPoints}/${totalPoints} (已完成)`;
                     updateProgressBar();
                     console.log(`搜索任务已完成! 总积分: ${totalPoints}`);
-                    
+
                     clearState();
                     return true;
                 }
             }
-            
+
             // 检查英文真正完成提示
             if (allEarnedText.includes('You earned') && allEarnedText.includes('points already') && !allEarnedText.includes('Keep searching')) {
                 console.log(`找到英文完成文本`);
@@ -881,7 +1139,7 @@
                     domCache['rewards-progress'].textContent = `进度: ${totalPoints}/${totalPoints} (已完成)`;
                     updateProgressBar();
                     console.log(`搜索任务已完成! 总积分: ${totalPoints}`);
-                    
+
                     clearState();
                     return true;
                 }
@@ -1071,15 +1329,15 @@
     // 获取Rewards数据（带重试机制）
     function getRewardsData(callback, retryCount = 0, maxRetries = 3) {
         updateStatus('正在获取奖励数据...');
-        
+
         if (openRewardsSidebar()) {
             // 使用轮询检查iframe是否加载完成
             let attempts = 0;
             const maxAttempts = 20; // 最多尝试20次，每次500ms，总共10秒
-            
+
             const checkIframeReady = () => {
                 attempts++;
-                
+
                 try {
                     const iframe = document.querySelector('iframe');
                     if (!iframe) {
@@ -1090,7 +1348,7 @@
                             throw new Error('未找到iframe');
                         }
                     }
-                    
+
                     const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
                     if (!iframeDoc || iframeDoc.readyState !== 'complete') {
                         if (attempts < maxAttempts) {
@@ -1100,7 +1358,7 @@
                             throw new Error('iframe未完全加载');
                         }
                     }
-                    
+
                     // iframe已经就绪，获取数据
                     const iframeLoaded = getDataFromIframe();
                     const mainTermsLoaded = getSearchTermsFromMainDoc();
@@ -1117,7 +1375,7 @@
 
                     updateStatus('数据获取成功' + (hasInterceptedData ? ' (API拦截)' : ''));
                     updateAndSaveState(); // 保存状态
-                    
+
                     if (currentProgress.completed) {
                         updateStatus('搜索任务已完成！');
                         if (isSearching) {
@@ -1132,10 +1390,10 @@
                     } else if (callback) {
                         callback();
                     }
-                    
+
                 } catch (error) {
                     console.log(`数据获取尝试 ${attempts} 失败:`, error.message);
-                    
+
                     if (attempts >= maxAttempts) {
                         // 达到最大尝试次数，考虑重试
                         if (retryCount < maxRetries) {
@@ -1153,10 +1411,10 @@
                     }
                 }
             };
-            
+
             // 开始检查iframe状态
             setTimeout(checkIframeReady, 500);
-            
+
         } else {
             if (retryCount < maxRetries) {
                 console.log(`未找到积分按钮，重试中... (${retryCount + 1}/${maxRetries})`);
@@ -1405,7 +1663,7 @@
                     ensureFallbackSearchTerms();
                 }
                 if (mainPageSearchTerms.length === 0 && iframeSearchTerms.length === 0) {
-                    updateStatus('没有搜索词，无法开始搜索');
+                    alert('没有搜索词，无法开始搜索');
                     return;
                 }
                 // 有搜索词，开始搜索
@@ -1418,7 +1676,6 @@
 
     // 开始搜索流程
     function startSearchProcess() {
-        if (isSearching) return;
         isSearching = true;
         searchState.needRest = false;
         currentProgress.noProgressCount = 0;  // 重置未增加计数
@@ -1454,7 +1711,7 @@
 
             // 更新UI显示
             if (currentProgress.current !== undefined && currentProgress.total !== undefined) {
-                const progressText = currentProgress.completed ? 
+                const progressText = currentProgress.completed ?
                     `进度: ${currentProgress.current}/${currentProgress.total} (已完成)` :
                     `进度: ${currentProgress.current}/${currentProgress.total}`;
                 const progressElement = domCache['rewards-progress'];
@@ -1464,7 +1721,7 @@
             }
 
             updateStatus('检测到之前的搜索任务，正在恢复...');
-            
+
             // 延迟启动自动搜索，给页面时间初始化
             setTimeout(() => {
                 if (!currentProgress.completed) {
@@ -1475,7 +1732,7 @@
                     clearState();
                 }
             }, 3000);
-            
+
             return true;
         }
         return false;
@@ -1511,7 +1768,6 @@
         }
 
         isSearching = false;
-        searchState.countdown = 0;
         searchState.currentAction = 'idle';
         searchState.needRest = false;
         currentProgress.noProgressCount = 0;  // 重置未增加计数
@@ -1601,36 +1857,46 @@
     // re-apply theme colors to all UI elements
     function applyTheme() {
         const theme = getTheme();
-        const capsule = domCache['capsule-btn'];
-        const panel = domCache['panel-body'];
-        const dot = domCache['status-dot-capsule'];
-        if (capsule) {
-            capsule.style.background = 'linear-gradient(135deg,' + theme.accent + ',#005a9e)';
-            capsule.style.boxShadow = '0 2px 12px rgba(0,120,212,.35)';
-        }
-        if (panel) {
-            panel.style.backgroundColor = theme.bg;
-            panel.style.color = theme.text;
-            panel.style.borderColor = theme.border;
-        }
-        if (dot) { dot.style.background = '#aaa'; dot.style.boxShadow = 'none'; }
-        const status = domCache['search-status'];
-        if (status) { status.style.backgroundColor = theme.inputBg; status.style.color = theme.text; }
-        const cfgSec = domCache['rewards-config-section'];
-        if (cfgSec) cfgSec.style.borderTopColor = theme.border;
-        const termsCont = domCache['rewards-search-terms-container'];
-        if (termsCont) termsCont.style.backgroundColor = theme.inputBg;
-        const btn = domCache['start-search-btn'];
-        if (btn && !isSearching) { btn.style.background = 'linear-gradient(135deg,' + theme.accent + ',#005a9e)'; }
         const container = domCache['rewards-helper-container'];
-        if (container) {
-            container.querySelectorAll('input[type=number]').forEach(input => {
-                input.style.background = theme.inputBg;
-                input.style.color = theme.text;
-                input.style.borderColor = theme.inputBorder;
-            });
+        if (!container) return;
+
+        container.style.backgroundColor = theme.bg;
+        container.style.color = theme.text;
+        container.style.borderColor = theme.border;
+
+        // header gradient
+        const header = container.querySelector('div');
+        if (header) header.style.background = `linear-gradient(135deg, ${theme.accent}, #005a9e)`;
+
+        // status background
+        const status = domCache['search-status'];
+        if (status) {
+            status.style.backgroundColor = theme.inputBg;
+            status.style.borderLeftColor = theme.accent;
+        }
+
+        // config section border
+        const configSection = domCache['rewards-config-section'];
+        if (configSection) configSection.style.borderTopColor = theme.border;
+
+        // inputs
+        container.querySelectorAll('input[type="number"]').forEach(input => {
+            input.style.background = theme.inputBg;
+            input.style.color = theme.text;
+            input.style.borderColor = theme.inputBorder;
+        });
+
+        // search terms container background
+        const termsContainer = domCache['rewards-search-terms-container'];
+        if (termsContainer) termsContainer.style.backgroundColor = theme.inputBg;
+
+        // start button gradient
+        const btn = domCache['start-search-btn'];
+        if (btn && !isSearching) {
+            btn.style.background = `linear-gradient(135deg, ${theme.accent}, #005a9e)`;
         }
     }
+
     // 在页面加载完成后初始化
     function init() {
         console.log('Microsoft Rewards 助手已加载');
